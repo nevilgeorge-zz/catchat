@@ -4,23 +4,22 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+// allows stylesheet "styling.css" to be used
+app.use(express.static(__dirname));
+
 app.get('/', function(request, response) {
 	response.sendfile('index.html');
 });
 
-// allows stylesheet "styling.css" to be used
-app.use(express.static(__dirname));
-
-io.on('connection', function(client) {
+io.on('connection', function(socket){
 	console.log('A user has connected!');
-
-	// logs to console if a user disconnects
-	client.on('disconnect', function() {
-		console.log('A user has disconnected.');
+	socket.on('join', function(name) {
+		socket.nickname = name;
 	});
 
-	client.on('message', function(data) {
-		console.log(data);
+	socket.on('message', function(msg){
+		var nickname = socket.nickname;
+		io.emit('message', nickname + ': ' + msg);
 	});
 });
 
