@@ -1,8 +1,17 @@
 // app.js
-var express = require('express');
-var app = express();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+var express = require('express'),
+	app = express(),
+	http = require('http').Server(app),
+	io = require('socket.io')(http);
+	redis = require('redis'),
+	redisClient = redis.createClient();
+
+var storeMessage = function(name, message) {
+	var string = name + ': ' + message;
+	redisClient.lpush('messages', string, function() {
+		redisClient.ltrim('messages', 0, 25);
+	});
+}
 
 // allows stylesheet "styling.css" to be used
 app.use(express.static(__dirname));
@@ -17,9 +26,23 @@ io.on('connection', function(socket){
 		socket.nickname = name;
 	});
 
+	socket.on('join', function(name) {
+		redisClient.lrange('messages', 0, -1, function(err, reply) {
+			var messages = reply.reverse();
+			reply.forEach(function(message) {
+				socket.emit('message', message);
+			});
+		});
+	});
+
 	socket.on('message', function(msg){
 		var nickname = socket.nickname;
 		io.emit('message', nickname + ': ' + msg);
+	});
+
+	socket.on('message', function(msg) {
+		var nickname = socket.nickname;
+		storeMessage(nickname, msg);
 	});
 });
 
