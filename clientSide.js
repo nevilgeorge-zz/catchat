@@ -8,9 +8,9 @@ socket.on('connect', function() {
 	socket.emit('join', nickname);
 });
 
-socket.on('user error', function(message) {
-	console.log(message);
-	alert(message);
+socket.on('user error', function(error) {
+	console.log(error);
+	alert(error);
 });
 
 $('form').submit(function(event) {

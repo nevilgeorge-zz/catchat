@@ -13,6 +13,21 @@ var storeMessage = function(name, message) {
 	});
 }
 
+var checkDB = function(name) {
+	rClient.lrange('users', 0, -1, function(err, reply) {
+		if (reply.length === 0) {
+			return false;
+		} else {
+			reply.forEach(function(nickname) {
+				if (name == nickname) {
+					return true;
+				}
+			});
+			return false;
+		}
+	});
+}
+
 // allows stylesheet "styling.css" to be used
 app.use(express.static(__dirname));
 
@@ -22,20 +37,19 @@ app.get('/', function(request, response) {
 
 io.on('connection', function(socket){
 	console.log('A user has connected!');
-	socket.on('join', function(name) {
+	/*socket.on('join', function(name) {
 		socket.nickname = name;
-	});
+	});*/
 
 	socket.on('join', function(name) {
-		redisClient.lrange('users', 0, -1, function(err, reply) {
-			for (var i = 0; i < reply.length; i++) {
-				if (reply[i] == name) {
-					var error = 'Nickname already exists!';
-					console.log(error);
-					socket.emit('user error', error);
-				}
-			}
-		});
+		var exists = checkDB(name);
+		console.log(exists);
+		if (!exists) {
+			socket.nickname = name;
+		} else {
+			var error = 'Nickname already exists!';
+			socket.emit('user error', error);
+		}
 	});
 
 	socket.on('join', function(name) {
