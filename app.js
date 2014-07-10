@@ -13,18 +13,16 @@ var storeMessage = function(name, message) {
 	});
 }
 
+redisClient.lpush('users', 'xxx');
+
 var checkDB = function(name) {
-	rClient.lrange('users', 0, -1, function(err, reply) {
-		if (reply.length === 0) {
-			return false;
-		} else {
-			reply.forEach(function(nickname) {
-				if (name == nickname) {
-					return true;
-				}
-			});
-			return false;
-		}
+	redisClient.lrange('users', 0, -1, function(err, reply) {
+		reply.forEach(function(nickname) {
+			if (name == nickname) {
+				return true;
+			}
+		})
+		return false;
 	});
 }
 
@@ -48,6 +46,7 @@ io.on('connection', function(socket){
 			socket.nickname = name;
 		} else {
 			var error = 'Nickname already exists!';
+			console.log(error);
 			socket.emit('user error', error);
 		}
 	});
