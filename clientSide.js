@@ -8,10 +8,10 @@ socket.on('connect', function() {
 	socket.emit('join', nickname);
 });
 
-socket.on('user error', function(error) {
-	console.log(error);
-	alert(error);
-});
+// socket.on('user error', function(error) {
+// 	console.log(error);
+// 	alert(error);
+// });
 
 $('form').submit(function(event) {
 	var msg = $('#m').val();

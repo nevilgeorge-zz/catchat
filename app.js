@@ -13,18 +13,16 @@ var storeMessage = function(name, message) {
 	});
 }
 
-redisClient.lpush('users', 'xxx');
-
 var checkDB = function(name) {
-	redisClient.lrange('users', 0, -1, function(err, reply) {
-		reply.forEach(function(nickname) {
-			if (name == nickname) {
-				return true;
-			}
-		})
-		return false;
-	});
-}
+	var reply = redisClient.lrange('users', 0, -1);
+	for (var i = 0; i < reply.length; i++) {
+		console.log(reply.length);
+		if (reply[i] == name) {
+			return true;
+		}
+	}
+	return false;
+};
 
 // allows stylesheet "styling.css" to be used
 app.use(express.static(__dirname));
@@ -44,10 +42,9 @@ io.on('connection', function(socket){
 		console.log(exists);
 		if (!exists) {
 			socket.nickname = name;
+			redisClient.lpush('users', name);
 		} else {
-			var error = 'Nickname already exists!';
-			console.log(error);
-			socket.emit('user error', error);
+			console.log('exists!');
 		}
 	});
 
