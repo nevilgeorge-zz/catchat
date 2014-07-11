@@ -1,17 +1,23 @@
 var socket = io();
 
-socket.on('connect', function() {
+var askNickname = function() {
 	var nickname = prompt('What is your nickname?');
-	if (nickname === null) {
+	if (nickname === null || nickname === '') {
 		nickname = 'Untamed Wildcat';
 	}
+	return nickname;
+}
+
+socket.on('connect', function() {
+	var nickname = askNickname();
 	socket.emit('join', nickname);
 });
 
-// socket.on('user error', function(error) {
-// 	console.log(error);
-// 	alert(error);
-// });
+socket.on('user error', function(error) {
+	alert(error);
+	var nickname = askNickname();
+	socket.emit('join', nickname);
+});
 
 $('form').submit(function(event) {
 	var msg = $('#m').val();

@@ -11,17 +11,6 @@ var storeMessage = function(name, message) {
 	redisClient.lpush('messages', string, function() {
 		redisClient.ltrim('messages', 0, 25);
 	});
-}
-
-var checkDB = function(name) {
-	var reply = redisClient.lrange('users', 0, -1);
-	for (var i = 0; i < reply.length; i++) {
-		console.log(reply.length);
-		if (reply[i] == name) {
-			return true;
-		}
-	}
-	return false;
 };
 
 // allows stylesheet "styling.css" to be used
@@ -38,14 +27,18 @@ io.on('connection', function(socket){
 	});*/
 
 	socket.on('join', function(name) {
-		var exists = checkDB(name);
-		console.log(exists);
-		if (!exists) {
-			socket.nickname = name;
-			redisClient.lpush('users', name);
-		} else {
-			console.log('exists!');
-		}
+		redisClient.sismember('users', name, function(err, reply) {
+			if (reply == 1) {
+				console.log('duplicate detected!');
+				socket.emit('user error', 'Nickname already taken!');
+			} else {
+				if (name != 'Untamed Wildcat') {
+					redisClient.sadd('users', name);
+					socket.nickname = name;
+				}
+			}
+		});
+		
 	});
 
 	socket.on('join', function(name) {
