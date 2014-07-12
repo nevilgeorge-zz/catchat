@@ -10,14 +10,19 @@ var askNickname = function() {
 
 socket.on('connect', function() {
 	var nickname = askNickname();
-	socket.emit('join', nickname);
+	socket.emit('check db', nickname);
 });
 
-socket.on('user error', function(error) {
-	alert(error);
-	var nickname = askNickname();
-	socket.emit('join', nickname);
-});
+socket.on('user status', function(status, name) {
+	if (status == 1) {
+		alert('User already exists!');
+		var nickname = askNickname();
+		socket.emit('check db', nickname);
+	} else {
+		console.log(name);
+		socket.emit('join', name);
+	}
+})
 
 $('form').submit(function(event) {
 	var msg = $('#m').val();

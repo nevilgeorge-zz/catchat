@@ -9,7 +9,7 @@ var express = require('express'),
 var storeMessage = function(name, message) {
 	var string = name + ': ' + message;
 	redisClient.lpush('messages', string, function() {
-		redisClient.ltrim('messages', 0, 25);
+		redisClient.ltrim('messages', 0, 20);
 	});
 };
 
@@ -26,19 +26,17 @@ io.on('connection', function(socket){
 		socket.nickname = name;
 	});*/
 
-	socket.on('join', function(name) {
+	socket.on('check db', function(name) {
 		redisClient.sismember('users', name, function(err, reply) {
-			if (reply == 1) {
-				console.log('duplicate detected!');
-				socket.emit('user error', 'Nickname already taken!');
-			} else {
-				if (name != 'Untamed Wildcat') {
-					redisClient.sadd('users', name);
-					socket.nickname = name;
-				}
-			}
+			socket.emit('user status', reply, name);
 		});
-		
+	});
+
+	socket.on('join', function(name) {
+		if (name != 'Untamed Wildcat') {
+			redisClient.sadd('users', name);
+		}
+		socket.nickname = name;
 	});
 
 	socket.on('join', function(name) {
