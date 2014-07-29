@@ -15,6 +15,7 @@ var storeMessage = function(name, message) {
 
 // allows stylesheet "styling.css" to be used
 app.use(express.static(__dirname));
+app.use('views', express.static(__dirname + '/views'));
 
 app.get('/', function(request, response) {
 	response.sendfile('index.html');
@@ -22,9 +23,6 @@ app.get('/', function(request, response) {
 
 io.on('connection', function(socket){
 	console.log('A user has connected!');
-	/*socket.on('join', function(name) {
-		socket.nickname = name;
-	});*/
 
 	socket.on('check db', function(name) {
 		redisClient.sismember('users', name, function(err, reply) {
